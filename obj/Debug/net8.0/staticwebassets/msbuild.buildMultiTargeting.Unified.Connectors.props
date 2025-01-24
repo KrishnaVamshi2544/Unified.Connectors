@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\Unified.Connectors.props" />
+</Project>

@@ -1,0 +1,6 @@
+@Unified.Connectors_HostAddress = http://localhost:5003
+
+GET {{Unified.Connectors_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
