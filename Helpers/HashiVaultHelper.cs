@@ -16,12 +16,11 @@ namespace Unified.Connectors.Helpers
         /// </summary>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public async Task<string> GetConfigAsync()
+        public async Task<string> GetConfigAsync(string secretPath)
         {
             try
             {
                 string baseUrl = "https://vault.us-east-1.dev.revealglobal.cloud/";
-                string secretPath = "Exchange/SecretData";
                 string mountName = "unifiedkv2";
                 string username = "vgodhari";
                 string password = "Vertical@123";

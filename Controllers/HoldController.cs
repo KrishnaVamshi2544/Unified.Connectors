@@ -42,7 +42,7 @@ namespace Unified.Connectors.Controllers
         public ActionResult Post([FromBody] UserRequestModel userRequestModel)
         {
             //Get Exchange Configuration
-            var configuration = new HashiVaultHelper().GetConfigAsync().Result;
+            var configuration = new ClientConfiguration().GetConfig(_unifiedDbContext, userRequestModel.CompanyId, userRequestModel.ClientId);
 
             var config = JsonConvert.DeserializeObject<AzureADConfig>(configuration);
 
