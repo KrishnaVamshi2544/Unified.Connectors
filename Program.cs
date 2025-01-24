@@ -1,3 +1,7 @@
+using Microsoft.EntityFrameworkCore;
+using System;
+using Unified.Connectors.DBContext;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -7,6 +11,10 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Add services to the container.
+
+builder.Services.AddDbContext<UnifiedDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("MasterConnection")));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

@@ -3,6 +3,8 @@ using ExchangePOC.Helpers;
 using Newtonsoft.Json;
 using Unified.Connectors.Model;
 using Unified.Connectors.Constants;
+using Unified.Connectors.DBContext;
+using Unified.Connectors.Helpers;
 
 namespace Unified.Connectors.Controllers
 {
@@ -10,33 +12,42 @@ namespace Unified.Connectors.Controllers
     [Route("[controller]")]
     public class HoldController : ControllerBase
     {
+        #region declarations
         private readonly ILogger<HoldController> _logger;
-        private static string clientId = "a020aab8-44fc-4b88-8ae5-b6b9754b27c0";
-        private static string tenantId = "1b9e56bb-95c9-4ee7-897f-11f07083dc01";
-        private static string clientSecret = "R4O8Q~oODgmAron0C7bbVh4z4kKx5lkzuAVbubhP";
-        private static string userName = "ediscsvcacc@verticalediscovery.com";
-        private static string password = "xY4+qyYWje1a4vM0k";
-        private static string baseUrl = "https://graph.microsoft.com/";
-        public HoldController(ILogger<HoldController> logger)
+        private readonly UnifiedDbContext _unifiedDbContext;
+        #endregion
+
+
+        #region constructor
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="logger"></param>
+        /// <param name="unifiedDbContext"></param>
+        public HoldController(ILogger<HoldController> logger, UnifiedDbContext unifiedDbContext)
         {
             _logger = logger;
+            _unifiedDbContext = unifiedDbContext;
         }
 
+        #endregion
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="userRequestModel"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         [HttpPost("Create")]
-        public IActionResult Post([FromBody] UserRequestModel userRequestModel)
+        public ActionResult Post([FromBody] UserRequestModel userRequestModel)
         {
-            var config = new AzureADConfig()
-            {
-                ClientId = clientId,
-                TenantId = tenantId,
-                ClientSecret = clientSecret,
-                UserName = userName,
-                UserPassword = password,
-                BaseURL = baseUrl
-            };
+            //Get Exchange Configuration
+            var configuration = new HashiVaultHelper().GetConfigAsync().Result;
+
+            var config = JsonConvert.DeserializeObject<AzureADConfig>(configuration);
 
             //Check User Exist in AZURE AD
-            var userDetails = CheckIfUserExistsAsync(config, userRequestModel.Email).Result;
+            var userDetails = CheckIfUserExistsAsync(config!, userRequestModel.Email).Result;
             if (userDetails == null)
             {
                 _logger.LogError("User does not exist.");
