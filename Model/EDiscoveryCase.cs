@@ -1,4 +1,6 @@
 ﻿
+using Newtonsoft.Json;
+
 namespace Unified.Connectors.Model
 {
     public class EDiscoveryCase
@@ -16,13 +18,36 @@ namespace Unified.Connectors.Model
         public Closedby ClosedBy { get; set; }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class Lastmodifiedby
     {
         public User user { get; set; }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class Closedby
     {
         public User user { get; set; }
+    }
+
+    /// <summary>
+    /// Case creation response
+    /// </summary>
+    public class CaseRoot
+    {
+        [JsonProperty("@odata.context")]
+        public string OdataContext { get; set; }
+
+        [JsonProperty("@odata.count")]
+        public int OdataCount { get; set; }
+
+        [JsonProperty("@odata.nextLink")]
+        public string OdataNextLink { get; set; }
+        [JsonProperty("value")]
+        public List<EDiscoveryCase> Case { get; set; }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Text;
 using VaultSharp;
 using VaultSharp.Core;
 using VaultSharp.V1.AuthMethods.UserPass;
@@ -58,6 +60,49 @@ namespace Unified.Connectors.Helpers
             catch (VaultApiException)
             {
                 throw new Exception("Error Processing while connecting to Hashi Vault");
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vaultUrl"></param>
+        /// <param name="authPath"></param>
+        /// <param name="username"></param>
+        /// <param name="password"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public  async Task<string> GenerateTokenAsync(string vaultUrl, string authPath, string username, string password)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                client.BaseAddress = new Uri(vaultUrl);
+
+                var payload = new
+                {
+                    password = password
+                };
+
+                string jsonPayload = JsonConvert.SerializeObject(payload);
+                string url = $"{authPath}/login/{username}";
+
+                HttpResponseMessage response = await client.PostAsync(url,
+                    new StringContent(jsonPayload, Encoding.UTF8, "application/json")
+                );
+
+                if (response.IsSuccessStatusCode)
+                {
+                    string responseBody = await response.Content.ReadAsStringAsync();
+                    JObject responseObject = JsonConvert.DeserializeObject<JObject>(responseBody);
+                    string token = responseObject["auth"]?["client_token"]?.ToString();
+
+                    return token;
+                }
+                else
+                {
+                    string errorDetails = await response.Content.ReadAsStringAsync();
+                    throw new Exception("Error while Generating Token");
+                }
             }
         }
     }

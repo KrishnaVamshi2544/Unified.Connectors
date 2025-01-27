@@ -54,14 +54,17 @@ namespace Unified.Connectors.Controllers
                 throw new Exception("User does not exist.");
             }
 
-
-            //Create Case in Purview
-            var caseResponse = CreatePremiumCaseAsync(config, userRequestModel.CaseName).Result;
-            if (caseResponse == null)
+            EDiscoveryCase caseResponse;
+            caseResponse = GetCasesAsync(config, userRequestModel.CaseName).Result;
+            if(caseResponse == null)
             {
-                throw new Exception("Unable to Create Case");
+                //Create Case in Purview
+                caseResponse = CreatePremiumCaseAsync(config, userRequestModel.CaseName).Result;
+                if (caseResponse == null)
+                {
+                    throw new Exception("Unable to Create Case");
+                }
             }
-
 
             string email = userRequestModel.Email;
             //Add Custodian To case
@@ -95,7 +98,7 @@ namespace Unified.Connectors.Controllers
             }
 
             //Create SourceCollection
-            string custodianName = "NithishReddy";
+            string custodianName = userDetails.displayName;
             var sourceCollection = CreateSourceCollectionAsync(config, caseResponse.Id, custodian.Id, custUserSource.id, custodianName + DateTime.UtcNow).Result;
             if (sourceCollection == null)
             {
@@ -160,6 +163,54 @@ namespace Unified.Connectors.Controllers
             finally
             {
 
+            }
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="config"></param>
+        /// <param name="caseName"></param>
+        /// <returns></returns>
+        public static async Task<EDiscoveryCase> GetCasesAsync(AzureADConfig config, string caseName)
+        {
+            var getCaseAPIDetails = GraphAPIEndpoints.GetCases;
+
+            config.Scope = getCaseAPIDetails.Scope;
+            config.AuthenticationMode = "Delegated";
+            var accessToken = new AzureADHelper().GetGraphToken(config).Result;
+            string endpoint = string.Format(getCaseAPIDetails.APIEndPoint, config.BaseURL, "v1.0");
+
+            var response = new AzureADHelper().GetHttpContentWithTokenAsync(endpoint, accessToken).Result;
+
+            if (response.IsSuccessStatusCode)
+            {
+                string responseBody = await response.Content.ReadAsStringAsync();
+                var caseRoot = JsonConvert.DeserializeObject<CaseRoot>(responseBody);
+                var reqCase = caseRoot?.Case?.FirstOrDefault(c => c.DisplayName == caseName);
+                if (reqCase == null && !string.IsNullOrEmpty(caseRoot?.OdataNextLink))
+                {
+                    caseRoot = await GetCaseNext(caseName, caseRoot.OdataNextLink);
+                    reqCase = caseRoot.Case.FirstOrDefault(c => c.DisplayName == caseName);
+
+                    //recursive local function
+                    async Task<CaseRoot> GetCaseNext(string Name, string nextLink)
+                    {
+                        response = new AzureADHelper().GetHttpContentWithTokenAsync(nextLink, accessToken).Result;
+                        string responseBody = await response.Content.ReadAsStringAsync();
+                        caseRoot = JsonConvert.DeserializeObject<CaseRoot>(responseBody);
+
+                        if (caseRoot?.Case.FirstOrDefault(c => c.DisplayName == caseName) == null && !string.IsNullOrEmpty(caseRoot?.OdataNextLink))
+                            caseRoot = await GetCaseNext(caseName, caseRoot.OdataNextLink);
+                        return caseRoot!;
+                    }
+                }
+                return reqCase;
+            }
+            else
+            {
+                throw new Exception("Failed to create premium case");
             }
 
         }
