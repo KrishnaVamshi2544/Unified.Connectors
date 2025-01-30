@@ -2,13 +2,13 @@
 
 namespace Unified.Connectors.EntityModels
 {
-    [Table("ClientConfiguration", Schema = "unified")]
-    public class ClientConfiguration : BaseModel
+    [Table("CompanyConfiguration", Schema = "unified")]
+    public class CompanyConfiguration : BaseModel
     {
         public int Id { get; set; }
         public int CompanyId { get; set; }
         public int ClientId { get; set; }
-        public string DataSource { get; set; }
+        public int ConnectorId { get; set; }
         public string Path { get; set; }
 
     }

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using System;
 using Unified.Connectors.DBContext;
+using Unified.Connectors.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,9 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<UnifiedDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("MasterConnection")));
+builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
+builder.Services.AddHostedService<BackgroundWorker>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

@@ -24,7 +24,7 @@
 
     public class HoldStats
     {
-        public long? indexedItemCount { get; set; }
-        public long? indexedItemsSize { get; set; }
+        public int? indexedItemCount { get; set; }
+        public decimal? indexedItemsSize { get; set; }
     }
 }
